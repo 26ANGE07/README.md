@@ -1,1 +1,1033 @@
+DOCUMENTO DE ESPECIFICACIÓN DE REQUERIMIENTOS DE SOFTWARE (DRS)
+VERSIÓN 1.0
 
+PROYECTO: SISTEMA DE REGISTRO DE USUARIOS
+
+═══════════════════════════════════════════════════════════════
+
+1. INTRODUCCIÓN
+
+1.1 Propósito
+Este documento describe los requerimientos funcionales y no funcionales para 
+el Sistema de Registro de Usuarios versión 1.0, que permitirá gestionar el 
+proceso de registro, autenticación y administración de usuarios.
+
+1.2 Alcance
+Sistema web que permite a nuevos usuarios registrarse, iniciar sesión, 
+gestionar su perfil y a los administradores controlar el acceso y permisos.
+
+1.3 Definiciones y Acrónimos
+- Usuario: Persona que utiliza el sistema
+- Admin: Administrador del sistema con permisos especiales
+- CRUD: Crear, Leer, Actualizar, Eliminar
+- Hash: Función criptográfica para proteger contraseñas
+- Token: Identificador único de sesión
+- 2FA: Autenticación de dos factores
+
+1.4 Referencias
+- IEEE Std 830-1998: Práctica recomendada para especificaciones de 
+  requerimientos de software
+- OWASP Top 10: Estándares de seguridad web
+
+═══════════════════════════════════════════════════════════════
+
+2. DESCRIPCIÓN GENERAL
+
+2.1 Perspectiva del Producto
+El Sistema de Registro de Usuarios es una aplicación web independiente que 
+servirá como módulo de autenticación para futuros sistemas empresariales.
+
+2.2 Funciones del Producto
+- Registro de nuevos usuarios
+- Autenticación y autorización
+- Gestión de perfiles de usuario
+- Recuperación de contraseñas
+- Administración de usuarios
+
+2.3 Características de los Usuarios
+
+Usuario Final:
+- Conocimientos básicos de navegación web
+- Necesita acceso rápido y seguro
+- Valora la privacidad de sus datos
+
+Administrador:
+- Conocimientos técnicos intermedios
+- Necesita herramientas de gestión
+- Responsable de la seguridad del sistema
+
+2.4 Restricciones
+- Desarrollo en 2 meses
+- Presupuesto: $8,000 USD
+- Equipo: 3 desarrolladores
+- Cumplimiento con GDPR y protección de datos
+
+═══════════════════════════════════════════════════════════════
+
+3. REQUERIMIENTOS FUNCIONALES
+
+RF-01: Registro de Usuario
+Descripción: El sistema debe permitir a nuevos usuarios registrarse 
+proporcionando nombre, email, contraseña y aceptando términos y condiciones.
+
+Entrada:
+- Nombre completo (mínimo 3 caracteres)
+- Email válido (único en el sistema)
+- Contraseña (mínimo 8 caracteres, incluir mayúsculas, minúsculas y números)
+- Confirmación de contraseña
+- Aceptación de términos y condiciones
+
+Proceso:
+1. Validar formato de datos
+2. Verificar que el email no exista
+3. Hashear la contraseña
+4. Crear registro en base de datos
+5. Enviar email de verificación
+
+Salida:
+- Mensaje de confirmación
+- Email de verificación enviado
+- Redirección a página de verificación
+
+Prioridad: Alta
+Estado: Aprobado
+Criterios de Aceptación:
+- Email único en el sistema
+- Contraseña hasheada con bcrypt
+- Email de verificación enviado en < 30 segundos
+
+---
+
+RF-02: Verificación de Email
+Descripción: El sistema debe enviar un email con un enlace de verificación 
+que el usuario debe activar para completar el registro.
+
+Entrada:
+- Token de verificación único
+- Email del usuario
+
+Proceso:
+1. Generar token único con expiración de 24 horas
+2. Enviar email con enlace de verificación
+3. Al hacer clic, validar token
+4. Activar cuenta de usuario
+
+Salida:
+- Cuenta activada
+- Mensaje de confirmación
+- Redirección a inicio de sesión
+
+Prioridad: Alta
+Estado: Aprobado
+Criterios de Aceptación:
+- Token expira en 24 horas
+- Email contiene enlace funcional
+- Cuenta se activa correctamente
+
+---
+
+RF-03: Inicio de Sesión
+Descripción: El sistema debe permitir a usuarios registrados iniciar sesión 
+con su email y contraseña.
+
+Entrada:
+- Email
+- Contraseña
+
+Proceso:
+1. Validar que el email existe
+2. Verificar que la cuenta está activada
+3. Comparar contraseña hasheada
+4. Generar token de sesión
+5. Crear sesión de usuario
+
+Salida:
+- Acceso al sistema
+- Token de sesión generado
+- Redirección a dashboard
+
+Prioridad: Alta
+Estado: Aprobado
+Criterios de Aceptación:
+- Solo usuarios verificados pueden acceder
+- Máximo 5 intentos fallidos antes de bloqueo temporal
+- Sesión expira después de 30 minutos de inactividad
+
+---
+
+RF-04: Recuperación de Contraseña
+Descripción: El sistema debe permitir a usuarios recuperar su contraseña 
+mediante un enlace enviado a su email.
+
+Entrada:
+- Email del usuario
+
+Proceso:
+1. Verificar que el email existe
+2. Generar token de recuperación
+3. Enviar email con enlace
+4. Usuario hace clic y establece nueva contraseña
+5. Invalidar token usado
+
+Salida:
+- Email de recuperación enviado
+- Contraseña actualizada
+- Confirmación de cambio
+
+Prioridad: Alta
+Estado: Aprobado
+Criterios de Aceptación:
+- Token expira en 1 hora
+- Nueva contraseña debe cumplir requisitos de seguridad
+- Token solo puede usarse una vez
+
+---
+
+RF-05: Editar Perfil de Usuario
+Descripción: El sistema debe permitir a usuarios editar su información 
+personal (nombre, teléfono, dirección, foto de perfil).
+
+Entrada:
+- Nombre completo
+- Teléfono (opcional)
+- Dirección (opcional)
+- Foto de perfil (opcional, max 2MB)
+
+Proceso:
+1. Validar datos ingresados
+2. Verificar tamaño de imagen
+3. Actualizar información en base de datos
+4. Confirmar cambios
+
+Salida:
+- Perfil actualizado
+- Mensaje de confirmación
+
+Prioridad: Media
+Estado: Aprobado
+Criterios de Aceptación:
+- Imagen máximo 2MB
+- Formatos permitidos: JPG, PNG
+- Cambios se reflejan inmediatamente
+
+---
+
+RF-06: Cambiar Contraseña
+Descripción: El sistema debe permitir a usuarios cambiar su contraseña 
+proporcionando la contraseña actual y la nueva.
+
+Entrada:
+- Contraseña actual
+- Nueva contraseña
+- Confirmación de nueva contraseña
+
+Proceso:
+1. Verificar contraseña actual
+2. Validar nueva contraseña (requisitos de seguridad)
+3. Hashear nueva contraseña
+4. Actualizar en base de datos
+5. Cerrar todas las sesiones activas
+
+Salida:
+- Contraseña actualizada
+- Sesiones cerradas
+- Mensaje de confirmación
+
+Prioridad: Media
+Estado: Aprobado
+Criterios de Aceptación:
+- Contraseña actual debe ser correcta
+- Nueva contraseña diferente a la actual
+- Todas las sesiones se cierran excepto la actual
+
+---
+
+RF-07: Cerrar Sesión
+Descripción: El sistema debe permitir a usuarios cerrar su sesión de forma 
+segura.
+
+Entrada:
+- Acción de cerrar sesión
+
+Proceso:
+1. Invalidar token de sesión
+2. Eliminar cookies de sesión
+3. Limpiar datos de sesión del servidor
+
+Salida:
+- Sesión cerrada
+- Redirección a página de inicio
+- Mensaje de confirmación
+
+Prioridad: Alta
+Estado: Aprobado
+Criterios de Aceptación:
+- Token invalidado completamente
+- No se puede acceder con token antiguo
+- Redirección inmediata
+
+---
+
+RF-08: Listar Usuarios (Admin)
+Descripción: El sistema debe permitir a administradores ver una lista de 
+todos los usuarios registrados con opciones de filtrado y búsqueda.
+
+Entrada:
+- Filtros (estado, fecha de registro, rol)
+- Término de búsqueda
+
+Proceso:
+1. Verificar permisos de administrador
+2. Consultar base de datos
+3. Aplicar filtros
+4. Paginar resultados (50 por página)
+
+Salida:
+- Lista de usuarios
+- Información: nombre, email, fecha de registro, estado
+- Opciones de acción por usuario
+
+Prioridad: Media
+Estado: Aprobado
+Criterios de Aceptación:
+- Solo administradores pueden acceder
+- Paginación funcional
+- Búsqueda en tiempo real
+
+---
+
+RF-09: Activar/Desactivar Usuario (Admin)
+Descripción: El sistema debe permitir a administradores activar o 
+desactivar cuentas de usuario.
+
+Entrada:
+- ID del usuario
+- Acción (activar/desactivar)
+- Razón (opcional)
+
+Proceso:
+1. Verificar permisos de administrador
+2. Cambiar estado del usuario
+3. Registrar acción en log
+4. Notificar al usuario por email
+
+Salida:
+- Estado del usuario actualizado
+- Email de notificación enviado
+- Registro en log de auditoría
+
+Prioridad: Media
+Estado: Aprobado
+Criterios de Aceptación:
+- Usuario desactivado no puede iniciar sesión
+- Acción registrada en log de auditoría
+- Email de notificación enviado
+
+---
+
+RF-10: Eliminar Usuario (Admin)
+Descripción: El sistema debe permitir a administradores eliminar usuarios 
+con confirmación de seguridad.
+
+Entrada:
+- ID del usuario
+- Confirmación de eliminación
+
+Proceso:
+1. Verificar permisos de administrador
+2. Solicitar confirmación
+3. Eliminar usuario de base de datos
+4. Eliminar datos asociados
+5. Registrar acción en log
+
+Salida:
+- Usuario eliminado
+- Datos asociados eliminados
+- Confirmación de eliminación
+
+Prioridad: Baja
+Estado: Aprobado
+Criterios de Aceptación:
+- Requiere doble confirmación
+- Acción irreversible
+- Registrada en log de auditoría
+
+═══════════════════════════════════════════════════════════════
+
+4. REQUERIMIENTOS NO FUNCIONALES
+
+RNF-01: Seguridad de Contraseñas
+Descripción: Las contraseñas deben ser hasheadas usando bcrypt con factor 
+de costo mínimo de 10.
+
+Prioridad: Crítica
+Métrica: 100% de contraseñas hasheadas
+Verificación: Auditoría de base de datos
+
+---
+
+RNF-02: Tiempo de Respuesta
+Descripción: El sistema debe responder a solicitudes de usuario en menos 
+de 2 segundos en el 95% de los casos.
+
+Prioridad: Alta
+Métrica: Tiempo de respuesta < 2 segundos
+Verificación: Pruebas de rendimiento
+
+---
+
+RNF-03: Disponibilidad
+Descripción: El sistema debe estar disponible el 99.5% del tiempo.
+
+Prioridad: Alta
+Métrica: Uptime 99.5%
+Verificación: Monitoreo continuo
+
+---
+
+RNF-04: Protección contra Ataques
+Descripción: El sistema debe implementar protección contra ataques comunes 
+(SQL Injection, XSS, CSRF).
+
+Prioridad: Crítica
+Métrica: 0 vulnerabilidades críticas
+Verificación: Pruebas de penetración
+
+---
+
+RNF-05: Validación de Datos
+Descripción: Todos los datos de entrada deben ser validados tanto en 
+cliente como en servidor.
+
+Prioridad: Alta
+Métrica: 100% de inputs validados
+Verificación: Revisión de código
+
+---
+
+RNF-06: Compatibilidad de Navegadores
+Descripción: El sistema debe funcionar correctamente en Chrome, Firefox, 
+Safari y Edge (últimas 2 versiones).
+
+Prioridad: Media
+Métrica: Funcionalidad completa en navegadores listados
+Verificación: Pruebas cross-browser
+
+---
+
+RNF-07: Responsive Design
+Descripción: La interfaz debe ser responsive y funcionar en dispositivos 
+móviles, tablets y desktop.
+
+Prioridad: Media
+Métrica: Funcionalidad en resoluciones 320px - 1920px
+Verificación: Pruebas en diferentes dispositivos
+
+---
+
+RNF-08: Cumplimiento GDPR
+Descripción: El sistema debe cumplir con regulaciones de protección de 
+datos (GDPR).
+
+Prioridad: Crítica
+Métrica: Cumplimiento 100% con GDPR
+Verificación: Auditoría legal
+
+---
+
+RNF-09: Logs de Auditoría
+Descripción: El sistema debe registrar todas las acciones administrativas 
+y de seguridad.
+
+Prioridad: Alta
+Métrica: 100% de acciones críticas registradas
+Verificación: Revisión de logs
+
+---
+
+RNF-10: Escalabilidad
+Descripción: El sistema debe soportar hasta 10,000 usuarios concurrentes.
+
+Prioridad: Media
+Métrica: 10,000 usuarios sin degradación
+Verificación: Pruebas de carga
+
+═══════════════════════════════════════════════════════════════
+
+5. CASOS DE USO
+
+5.1 Diagrama de Casos de Uso
+
+Actores:
+- Usuario No Registrado
+- Usuario Registrado
+- Administrador
+
+Casos de Uso Principales:
+- Registrarse
+- Iniciar Sesión
+- Recuperar Contraseña
+- Gestionar Perfil
+- Administrar Usuarios
+
+═══════════════════════════════════════════════════════════════
+
+6. MODELO DE DATOS
+
+6.1 Entidades Principales
+
+Usuario:
+- id (PK)
+- nombre
+- email (único)
+- password (hash)
+- telefono
+- direccion
+- foto_perfil
+- rol (usuario/admin)
+- estado (activo/inactivo/pendiente)
+- email_verificado (boolean)
+- fecha_registro
+- ultima_conexion
+
+Token_Verificacion:
+- id (PK)
+- usuario_id (FK)
+- token
+- tipo (verificacion/recuperacion)
+- fecha_expiracion
+- usado (boolean)
+
+Sesion:
+- id (PK)
+- usuario_id (FK)
+- token
+- ip_address
+- user_agent
+- fecha_inicio
+- fecha_expiracion
+
+Log_Auditoria:
+- id (PK)
+- usuario_id (FK)
+- accion
+- descripcion
+- ip_address
+- fecha
+
+═══════════════════════════════════════════════════════════════
+
+7. INTERFACES DE USUARIO
+
+7.1 Pantallas Principales
+
+1. Página de Registro
+   - Formulario con campos requeridos
+   - Validación en tiempo real
+   - Indicador de fortaleza de contraseña
+
+2. Página de Inicio de Sesión
+   - Campos email y contraseña
+   - Enlace "Olvidé mi contraseña"
+   - Opción "Recordarme"
+
+3. Dashboard de Usuario
+   - Información de perfil
+   - Opciones de edición
+   - Historial de actividad
+
+4. Panel de Administración
+   - Lista de usuarios
+   - Estadísticas
+   - Herramientas de gestión
+
+═══════════════════════════════════════════════════════════════
+
+8. RESTRICCIONES Y SUPOSICIONES
+
+8.1 Restricciones
+- Presupuesto limitado a $8,000 USD
+- Tiempo de desarrollo: 2 meses
+- Equipo de 3 desarrolladores
+- Debe usar tecnologías open source
+
+8.2 Suposiciones
+- Los usuarios tienen acceso a email
+- Los usuarios tienen navegador web moderno
+- Conexión a internet estable
+- Servidor con capacidad suficiente
+
+═══════════════════════════════════════════════════════════════
+
+9. APROBACIONES
+
+Elaborado por: [Tu Nombre]
+Cargo: Analista de Sistemas
+Fecha: 19/11/2025
+
+Revisado por: [Nombre del Revisor]
+Cargo: Líder Técnico
+Fecha: ___/___/_____
+
+Aprobado por: [Nombre del Aprobador]
+Cargo: Gerente de Proyecto
+Fecha: ___/___/_____
+
+═══════════════════════════════════════════════════════════════
+
+CONTROL DE CAMBIOS
+
+Versión | Fecha | Autor | Descripción
+1.0 | 19/11/2025 | [Tu Nombre] | Versión inicial del documento
+
+═══════════════════════════════════════════════════════════════
+
+FIN DEL DOCUMENTO
+
+
+DOCUMENTO DE ESPECIFICACIÓN DE REQUERIMIENTOS DE SOFTWARE (DRS)
+VERSIÓN 2.0
+
+PROYECTO: SISTEMA DE REGISTRO DE USUARIOS
+
+═══════════════════════════════════════════════════════════════
+
+CONTROL DE CAMBIOS
+
+Versión | Fecha | Autor | Descripción
+1.0 | 19/11/2025 | [Tu Nombre] | Versión inicial
+2.0 | 19/11/2025 | [Tu Nombre] | Agregadas funcionalidades avanzadas
+
+CAMBIOS EN VERSIÓN 2.0:
+✓ Agregados 7 nuevos requerimientos funcionales
+✓ Agregados 3 nuevos requerimientos no funcionales
+✓ Modificado 1 requerimiento no funcional
+✓ Total: 17 requerimientos funcionales, 13 no funcionales
+
+═══════════════════════════════════════════════════════════════
+
+1. INTRODUCCIÓN
+
+1.1 Propósito
+Este documento describe los requerimientos funcionales y no funcionales para 
+el Sistema de Registro de Usuarios versión 2.0, incluyendo mejoras basadas 
+en feedback de usuarios y análisis de seguridad.
+
+1.2 Alcance (AMPLIADO)
+Sistema web avanzado que permite registro, autenticación multifactor, gestión 
+de perfiles, integración con redes sociales, y administración completa de 
+usuarios con análisis y reportes.
+
+1.3 Justificación de Cambios V2.0
+
+Los nuevos requerimientos se agregaron basándose en:
+- Feedback de 100 usuarios beta
+- Análisis de seguridad y mejores prácticas
+- Solicitudes de stakeholders
+- Benchmarking con competencia
+- Tendencias de autenticación moderna
+
+═══════════════════════════════════════════════════════════════
+
+2. REQUERIMIENTOS FUNCIONALES
+
+[RF-01 a RF-10: Mantienen la misma descripción de V1.0]
+
+═══════════════════════════════════════════════════════════════
+
+NUEVOS REQUERIMIENTOS FUNCIONALES V2.0
+
+RF-11: Autenticación de Dos Factores (2FA) [NUEVO]
+Descripción: El sistema debe permitir a usuarios habilitar autenticación de 
+dos factores mediante código SMS o aplicación autenticadora.
+
+Entrada:
+- Número de teléfono (para SMS)
+- Código QR (para app autenticadora)
+- Código de verificación
+
+Proceso:
+1. Usuario habilita 2FA en configuración
+2. Sistema genera código QR o envía SMS
+3. Usuario escanea QR o ingresa código
+4. Sistema valida y activa 2FA
+5. En cada inicio de sesión, solicita código adicional
+
+Salida:
+- 2FA activado
+- Códigos de respaldo generados
+- Confirmación de seguridad mejorada
+
+Prioridad: Alta
+Estado: Aprobado
+Justificación: Aumentar seguridad de cuentas
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Soporte para Google Authenticator y Authy
+- Generación de 10 códigos de respaldo
+- Opción de desactivar 2FA con verificación
+
+---
+
+RF-12: Inicio de Sesión con Redes Sociales [NUEVO]
+Descripción: El sistema debe permitir a usuarios registrarse e iniciar 
+sesión usando cuentas de Google, Facebook o GitHub.
+
+Entrada:
+- Selección de red social
+- Autorización de la red social
+
+Proceso:
+1. Usuario selecciona red social
+2. Redirección a proveedor OAuth
+3. Usuario autoriza acceso
+4. Sistema recibe datos del usuario
+5. Crea o vincula cuenta existente
+
+Salida:
+- Usuario autenticado
+- Perfil creado/actualizado con datos de red social
+- Acceso al sistema
+
+Prioridad: Media
+Estado: Aprobado
+Justificación: Facilitar registro y reducir fricción
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Integración con Google, Facebook y GitHub
+- Vinculación de cuentas existentes
+- Manejo seguro de tokens OAuth
+
+---
+
+RF-13: Gestión de Sesiones Activas [NUEVO]
+Descripción: El sistema debe permitir a usuarios ver y gestionar todas sus 
+sesiones activas en diferentes dispositivos.
+
+Entrada:
+- Solicitud de ver sesiones activas
+- Acción de cerrar sesión específica
+
+Proceso:
+1. Listar todas las sesiones activas
+2. Mostrar: dispositivo, ubicación, fecha
+3. Permitir cerrar sesiones individuales
+4. Permitir cerrar todas las sesiones excepto la actual
+
+Salida:
+- Lista de sesiones activas
+- Sesiones cerradas según selección
+- Confirmación de cierre
+
+Prioridad: Media
+Estado: Aprobado
+Justificación: Control de seguridad y privacidad
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Información detallada de cada sesión
+- Cierre inmediato de sesiones remotas
+- Notificación de cierre de sesión
+
+---
+
+RF-14: Historial de Actividad del Usuario [NUEVO]
+Descripción: El sistema debe registrar y mostrar al usuario un historial 
+de sus actividades (inicios de sesión, cambios de perfil, etc.).
+
+Entrada:
+- Solicitud de ver historial
+- Filtros (fecha, tipo de actividad)
+
+Proceso:
+1. Consultar log de actividades del usuario
+2. Aplicar filtros
+3. Paginar resultados
+4. Mostrar información detallada
+
+Salida:
+- Lista de actividades
+- Información: fecha, hora, acción, IP, dispositivo
+- Opciones de filtrado
+
+Prioridad: Baja
+Estado: Aprobado
+Justificación: Transparencia y detección de actividad sospechosa
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Registro de todas las actividades importantes
+- Retención de datos por 90 días
+- Exportación de historial en PDF
+
+---
+
+RF-15: Notificaciones de Seguridad [NUEVO]
+Descripción: El sistema debe enviar notificaciones automáticas al usuario 
+ante eventos de seguridad (nuevo inicio de sesión, cambio de contraseña, etc.).
+
+Entrada:
+- Evento de seguridad detectado
+
+Proceso:
+1. Detectar evento de seguridad
+2. Generar notificación
+3. Enviar por email y/o SMS
+4. Registrar notificación enviada
+
+Salida:
+- Email/SMS de notificación
+- Registro en log
+- Opción de reportar actividad sospechosa
+
+Prioridad: Alta
+Estado: Aprobado
+Justificación: Detección temprana de accesos no autorizados
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Notificación inmediata (< 1 minuto)
+- Incluye información del evento
+- Enlace para asegurar cuenta si es sospechoso
+
+---
+
+RF-16: Exportar Datos Personales (GDPR) [NUEVO]
+Descripción: El sistema debe permitir a usuarios exportar todos sus datos 
+personales en formato JSON o PDF (cumplimiento GDPR).
+
+Entrada:
+- Solicitud de exportación
+- Formato deseado (JSON/PDF)
+
+Proceso:
+1. Verificar identidad del usuario
+2. Recopilar todos los datos del usuario
+3. Generar archivo en formato solicitado
+4. Enviar enlace de descarga por email
+
+Salida:
+- Archivo con todos los datos personales
+- Email con enlace de descarga
+- Enlace válido por 48 horas
+
+Prioridad: Alta
+Estado: Aprobado
+Justificación: Cumplimiento con GDPR
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Incluye todos los datos del usuario
+- Formato legible y estructurado
+- Proceso completado en < 5 minutos
+
+---
+
+RF-17: Dashboard de Administración con Estadísticas [NUEVO]
+Descripción: El sistema debe proporcionar a administradores un dashboard 
+con estadísticas y métricas del sistema.
+
+Entrada:
+- Acceso de administrador
+- Filtros de fecha
+
+Proceso:
+1. Verificar permisos de administrador
+2. Calcular estadísticas
+3. Generar gráficos
+4. Mostrar métricas en tiempo real
+
+Salida:
+- Dashboard con:
+  * Total de usuarios registrados
+  * Usuarios activos hoy/semana/mes
+  * Nuevos registros por día
+  * Gráficos de tendencias
+  * Actividad del sistema
+
+Prioridad: Media
+Estado: Aprobado
+Justificación: Toma de decisiones basada en datos
+Cambio: Agregado en V2.0
+
+Criterios de Aceptación:
+- Actualización en tiempo real
+- Gráficos interactivos
+- Exportación de reportes en PDF
+
+═══════════════════════════════════════════════════════════════
+
+3. REQUERIMIENTOS NO FUNCIONALES
+
+[RNF-01 a RNF-10: Mantienen la misma descripción de V1.0]
+
+═══════════════════════════════════════════════════════════════
+
+NUEVOS REQUERIMIENTOS NO FUNCIONALES V2.0
+
+RNF-11: Rate Limiting [NUEVO]
+Descripción: El sistema debe implementar límites de tasa para prevenir 
+abuso (máximo 100 solicitudes por minuto por IP).
+
+Prioridad: Alta
+Métrica: Máximo 100 req/min por IP
+Verificación: Pruebas de carga
+Cambio: Agregado en V2.0
+
+---
+
+RNF-12: Backup Automático [NUEVO]
+Descripción: El sistema debe realizar backups automáticos de la base de 
+datos cada 6 horas.
+
+Prioridad: Crítica
+Métrica: Backup cada 6 horas, retención 30 días
+Verificación: Revisión de logs de backup
+Cambio: Agregado en V2.0
+
+---
+
+RNF-13: Tiempo de Respuesta Mejorado [MODIFICADO]
+Descripción: El sistema debe responder a solicitudes de usuario en menos 
+de 1 segundo en el 98% de los casos (antes era 2 segundos en 95%).
+
+Prioridad: Alta
+Métrica: Tiempo de respuesta < 1 segundo
+Verificación: Pruebas de rendimiento
+Cambio: Modificado en V2.0 - Requisito más estricto
+
+═══════════════════════════════════════════════════════════════
+
+4. RESUMEN DE CAMBIOS V1.0 → V2.0
+
+Requerimientos Funcionales:
+- V1.0: 10 requerimientos
+- V2.0: 17 requerimientos
+- Nuevos: 7 (RF-11 a RF-17)
+- Incremento: 70%
+
+Requerimientos No Funcionales:
+- V1.0: 10 requerimientos
+- V2.0: 13 requerimientos
+- Nuevos: 3 (RNF-11, RNF-12, RNF-13)
+- Modificados: 1 (RNF-13)
+- Incremento: 30%
+
+Nuevas Funcionalidades Clave:
+✓ Autenticación de dos factores (2FA)
+✓ Inicio de sesión con redes sociales
+✓ Gestión de sesiones activas
+✓ Historial de actividad
+✓ Notificaciones de seguridad
+✓ Exportación de datos (GDPR)
+✓ Dashboard de administración
+
+Mejoras de Seguridad:
+✓ 2FA obligatorio para administradores
+✓ Rate limiting
+✓ Notificaciones de eventos de seguridad
+✓ Gestión de sesiones mejorada
+
+Cumplimiento Regulatorio:
+✓ GDPR: Exportación de datos
+✓ GDPR: Derecho al olvido
+✓ Logs de auditoría completos
+
+═══════════════════════════════════════════════════════════════
+
+5. JUSTIFICACIÓN DETALLADA DE CAMBIOS
+
+5.1 Seguridad Mejorada
+La adición de 2FA y notificaciones de seguridad responde a:
+- Aumento de ataques de phishing
+- Solicitudes de usuarios corporativos
+- Mejores prácticas de la industria
+- Cumplimiento con estándares de seguridad
+
+5.2 Experiencia de Usuario
+El inicio de sesión con redes sociales reduce:
+- Fricción en el registro (de 5 minutos a 30 segundos)
+- Abandono en proceso de registro (reducción del 40%)
+- Necesidad de recordar contraseñas
+
+5.3 Cumplimiento Legal
+La exportación de datos y gestión de privacidad aseguran:
+- Cumplimiento con GDPR
+- Transparencia con usuarios
+- Protección legal de la empresa
+
+5.4 Administración Eficiente
+El dashboard de estadísticas permite:
+- Toma de decisiones basada en datos
+- Detección temprana de problemas
+- Optimización de recursos
+
+═══════════════════════════════════════════════════════════════
+
+6. IMPACTO EN ARQUITECTURA
+
+6.1 Nuevos Componentes
+- Servicio de autenticación 2FA
+- Integración OAuth con proveedores externos
+- Sistema de notificaciones
+- Motor de generación de reportes
+
+6.2 Modificaciones en Base de Datos
+- Tabla: configuracion_2fa
+- Tabla: sesiones_activas
+- Tabla: log_actividad_usuario
+- Tabla: notificaciones_enviadas
+- Tabla: vinculos_redes_sociales
+
+6.3 APIs Externas Requeridas
+- Google OAuth API
+- Facebook Graph API
+- GitHub OAuth API
+- Twilio (para SMS 2FA)
+- SendGrid (para emails mejorados)
+
+═══════════════════════════════════════════════════════════════
+
+7. PLAN DE MIGRACIÓN V1.0 → V2.0
+
+Fase 1: Preparación (Semana 1)
+- Backup completo de V1.0
+- Configuración de entorno de desarrollo V2.0
+- Instalación de dependencias nuevas
+
+Fase 2: Desarrollo (Semanas 2-6)
+- Implementación de nuevos requerimientos
+- Pruebas unitarias
+- Integración con APIs externas
+
+Fase 3: Pruebas (Semana 7)
+- Pruebas de integración
+- Pruebas de seguridad
+- Pruebas de rendimiento
+
+Fase 4: Despliegue (Semana 8)
+- Migración de datos
+- Despliegue en producción
+- Monitoreo intensivo
+
+═══════════════════════════════════════════════════════════════
+
+8. APROBACIONES
+
+Elaborado por: [Tu Nombre]
+Cargo: Analista de Sistemas
+Fecha: 19/11/2025
+
+Revisado por: [Nombre del Revisor]
+Cargo: Líder Técnico
+Fecha: ___/___/_____
+
+Aprobado por: [Nombre del Aprobador]
+Cargo: Gerente de Proyecto
+Fecha: ___/___/_____
+
+═══════════════════════════════════════════════════════════════
+
+FIN DEL DOCUMENTO - VERSIÓN 2.0
