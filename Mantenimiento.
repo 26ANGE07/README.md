@@ -1,1 +1,74 @@
+# PROPUESTA DE MANTENIMIENTO
+## PROYECTO: SISTEMA DE REGISTRO DE USUARIOS
+
+═══════════════════════════════════════════════════════════════
+
+## 1. INFORMACIÓN GENERAL
+
+**Proyecto:** Sistema de Registro de Usuarios  
+**Versión:** 2.0  
+**Fecha de Elaboración:** 19 de Noviembre de 2025  
+**Elaborado por:** [Tu Nombre]  
+**Cargo:** Analista de Sistemas
+
+═══════════════════════════════════════════════════════════════
+
+## 2. INTRODUCCIÓN
+
+Este documento presenta las propuestas de mantenimiento identificadas para 
+el Sistema de Registro de Usuarios, clasificadas en tres categorías según 
+su naturaleza:
+
+- **Mantenimiento Correctivo:** Solución de problemas y errores
+- **Mantenimiento Adaptativo:** Adaptación a cambios externos
+- **Mantenimiento Perfectivo:** Mejoras y optimizaciones
+
+Cada propuesta incluye descripción detallada, justificación, recursos 
+necesarios, tiempo estimado y plan de implementación.
+
+═══════════════════════════════════════════════════════════════
+
+## 3. MANTENIMIENTO CORRECTIVO
+
+### 3.1 Problema Identificado: Bloqueo de Cuenta por Intentos Fallidos
+
+**ID:** MC-01  
+**Título:** Implementar Mecanismo de Desbloqueo Automático de Cuentas  
+**Severidad:** Alta  
+**Prioridad:** Crítica  
+**Estado:** Propuesto
+
+---
+
+#### 📋 Descripción del Problema
+
+Actualmente, cuando un usuario ingresa credenciales incorrectas 5 veces 
+consecutivas, su cuenta se bloquea indefinidamente. El sistema no tiene 
+un mecanismo de desbloqueo automático, lo que genera:
+
+- Frustración en usuarios legítimos que olvidan su contraseña
+- Aumento de tickets de soporte (40% relacionados con desbloqueos)
+- Carga administrativa para el equipo de soporte
+- Posible pérdida de usuarios por experiencia negativa
+
+**Casos reportados:** 127 en el último mes  
+**Tiempo promedio de resolución:** 2 horas  
+**Impacto en usuarios:** Alto (no pueden acceder al sistema)
+
+---
+
+#### 🔍 Causa Raíz
+
+El sistema implementa bloqueo de seguridad pero no considera:
+- Desbloqueo automático después de un período de tiempo
+- Opción de desbloqueo mediante verificación de email
+- Diferenciación entre ataques reales y errores de usuario
+
+**Análisis técnico:**
+```python
+# Código actual (problemático)
+if failed_attempts >= 5:
+    user.status = 'blocked'
+    user.save()
+    # No hay mecanismo de desbloqueo automático
 
